@@ -167,10 +167,9 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
 
 /* takes input matrix H with rows 0 to start_row - 1 in HNF to a HNF matrix */
 static void
-add_rows(fmpz_mat_t H, slong start_row)
+add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
 {
-    slong i, i2, j, j2, num_pivots, new_row, row;
-    slong *pivots;
+    slong i, i2, j, j2, new_row, row;
     fmpz_t b, d, u, v, r1d, r2d, q;
 
     fmpz_init(b);
@@ -180,25 +179,21 @@ add_rows(fmpz_mat_t H, slong start_row)
     fmpz_init(r1d);
     fmpz_init(r2d);
     fmpz_init(q);
-    num_pivots = 0;
-
-    /* find the pivots of H */
-    pivots = flint_malloc(H->c * sizeof(slong));
-    for (i = j = 0; i < start_row; i++, j++)
-    {
-        for (; j < H->c && fmpz_is_zero(fmpz_mat_entry(H, i, j)); j++) ;
-        if (j == H->c)
-            break;
-        pivots[i] = j;
-        num_pivots = i + 1;
-    }
 
     for (row = start_row; row < H->r; row++)
     {
+        /*flint_printf("%wd\n", row);
+        fmpz_mat_print_pretty(H);*/
         /* reduce row to be added with existing */
-        for (i = 0; i < num_pivots; i++)
+        for (i = j = 0; i < num_pivots; i++)
         {
-            j = pivots[i];
+            /*flint_printf("\nreducing with row %wd\n", i);*/
+            /* check if added row can still be reduced */
+            for (; j < pivots[i]; j++)
+                if (!fmpz_is_zero(fmpz_mat_entry(H, row, j)))
+                    break;
+            if (j < pivots[i])
+                break;
             if (fmpz_is_zero(fmpz_mat_entry(H, row, j)))
                 continue;
             fmpz_xgcd(d, u, v, fmpz_mat_entry(H, i, j),
@@ -215,7 +210,9 @@ add_rows(fmpz_mat_t H, slong start_row)
                             fmpz_mat_entry(H, i, j2));
                 fmpz_set(fmpz_mat_entry(H, i, j2), b);
             }
+            /*fmpz_mat_print_pretty(H);*/
         }
+
         /* find first non-zero entry of the added row */
         for (j = 0; j < H->c && fmpz_is_zero(fmpz_mat_entry(H, row, j)); j++) ;
         new_row = row;
@@ -233,6 +230,8 @@ add_rows(fmpz_mat_t H, slong start_row)
             {
                 if (new_row < row)
                     fmpz_mat_swap_rows(H, NULL, new_row, new_row + 1);
+                if (new_row == 0)
+                    break;
                 new_row--;
                 for (j2 = 0; j2 < H->c &&
                      fmpz_is_zero(fmpz_mat_entry(H, new_row, j2)); j2++) ;
@@ -240,7 +239,8 @@ add_rows(fmpz_mat_t H, slong start_row)
             while (j2 > j);
         }
 
-        for (i = new_row, j = 0; i <= row; i++, j++)
+	/* recompute pivots */
+        for (i = new_row, j = 0; i <= row && i < H->c; i++, j++)
         {
             for (; j < H->c && fmpz_is_zero(fmpz_mat_entry(H, i, j)); j++) ;
             if (j == H->c)
@@ -272,7 +272,6 @@ add_rows(fmpz_mat_t H, slong start_row)
     fmpz_clear(u);
     fmpz_clear(d);
     fmpz_clear(b);
-    flint_free(pivots);
 }
 
 static void
@@ -451,178 +450,209 @@ double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
     fmpq_mat_clear(x);
 }
 
-int
-fmpz_mat_hnf_pernet_stein(fmpz_mat_t H, const fmpz_mat_t A, flint_rand_t state)
+void
+fmpz_mat_hnf_pernet_stein(fmpz_mat_t H, const fmpz_mat_t A)
 {
-    slong i, j, m, n, p, r, *P, *pivots;
+    slong i, j, m, n, p, r, *P, *pivots, finished;
     fmpz_t d1, d2, g, s, t;
     fmpz_mat_t c, d, B, C, H1, H2, H3;
     nmod_mat_t Amod;
+    flint_rand_t state;
 
     m = fmpz_mat_nrows(A);
     n = fmpz_mat_ncols(A);
 
+    if (m == 0 || n == 0)
+        return;
+
     /* find permutation so we can ensure first rows of H are nonsingular */
     P = _perm_init(m);
     pivots = _perm_init(n);
-    
-    p = n_randprime(state, NMOD_MAT_OPTIMAL_MODULUS_BITS, 1);
-    nmod_mat_init(Amod, m, n, p);
+    flint_randinit(state);
 
-    fmpz_mat_get_nmod_mat(Amod, A);
-    r = _nmod_mat_rref(Amod, pivots, P);
+    finished = 0;
 
-    nmod_mat_clear(Amod);
-
-    /* rank is not full, so silently fail */
-    if (r < FLINT_MIN(m, n))
+    while (!finished)
     {
-        _perm_clear(P);
-        _perm_clear(pivots);
-        
-        return 0;
-    }
+        p = n_randprime(state, NMOD_MAT_OPTIMAL_MODULUS_BITS, 1);
+        nmod_mat_init(Amod, m, n, p);
 
-    /* if A has full column rank we might wish to use minors based hnf */
-    if (r == n && n < 52)
-    {
-        slong b = fmpz_mat_max_bits(A), cutoff = 52;
-        if (b < 0)
-            b = -b;
+        fmpz_mat_get_nmod_mat(Amod, A);
+        r = _nmod_mat_rref(Amod, pivots, P);
 
-        if (b <= 8)
-            cutoff = 35;
-        else if (b <= 32)
-            cutoff = 44;
-        else if (b <= 256)
-            cutoff = 48;
+        nmod_mat_clear(Amod);
 
-        if (n < cutoff)
+        /* rank is zero so matrix is possibly zero too */
+        if (r == 0)
         {
-            fmpz_mat_hnf_minors(H, A);
-            _perm_clear(P);
-            _perm_clear(pivots);
-            return 1;
-        }
-    }
-
-    fmpz_mat_init(c, 1, r - 1);
-    fmpz_mat_init(d, 1, r - 1);
-    fmpz_mat_init(B, r - 2, r - 1);
-    fmpz_mat_init(C, r - 1, r - 1);
-
-    for (i = 0; i < r - 2; i++)
-    {
-        for (j = 0; j < r - 1; j++)
-        {
-            fmpz_set(fmpz_mat_entry(B, i, j),
-                     fmpz_mat_entry(A, P[i], pivots[j]));
-            fmpz_set(fmpz_mat_entry(C, i, j),
-                     fmpz_mat_entry(A, P[i], pivots[j]));
-        }
-        fmpz_set(fmpz_mat_entry(C, i, r - 1),
-                 fmpz_mat_entry(A, P[i], pivots[r - 1]));
-    }
-    for (j = 0; j < r - 1; j++)
-    {
-        fmpz_set(fmpz_mat_entry(c, 0, j),
-                 fmpz_mat_entry(A, P[r - 2], pivots[j]));
-        fmpz_set(fmpz_mat_entry(d, 0, j),
-                 fmpz_mat_entry(A, P[r - 1], pivots[j]));
-    }
-
-    fmpz_init(g);
-    fmpz_init(s);
-    fmpz_init(t);
-
-    /* if rank is too low leave g = 0 so we don't try to decompose later */
-    if (r > 2)
-    {
-        fmpz_init(d1);
-        fmpz_init(d2);
-
-        double_det(d1, d2, B, c, d);
-        fmpz_xgcd(g, s, t, d1, d2);
-
-        for (j = 0; j < r - 1; j++)
-        {
-            fmpz_mul(fmpz_mat_entry(C, r - 2, j), s,
-                     fmpz_mat_entry(A, P[r - 2], pivots[j]));
-            fmpz_addmul(fmpz_mat_entry(C, r - 2, j), t,
-                        fmpz_mat_entry(A, P[r - 1], pivots[j]));
+            if (fmpz_mat_is_zero(A))
+            {
+                fmpz_mat_zero(H);
+                flint_randclear(state);
+                _perm_clear(P);
+                _perm_clear(pivots);
+                return;
+            }
+            continue;
         }
 
-        fmpz_clear(d2);
-        fmpz_clear(d1);
-    }
-
-    if (!fmpz_is_zero(g))       /* chosen matrix invertible */
-    {
-        fmpz_mat_init(H1, r - 1, r - 1);
-
-        if (COEFF_IS_MPZ(*g) && C->r > 3)   /* if g is too big, call another algorithm */
+        /* if A has full column rank we might wish to use minors based hnf */
+        if (r == n && n < 52)
         {
-            fmpz_mat_hnf(H1, C);
-        }  else                    /* use modulo determinant algorithm to compute HNF of C */
-            fmpz_mat_hnf_modular(H1, C, g);
+            slong b = fmpz_mat_max_bits(A), cutoff = 52;
+            if (b < 0)
+                b = -b;
 
-        fmpz_mat_clear(B);
-        fmpz_mat_init(B, r - 1, n);
+            if (b <= 8)
+                cutoff = 35;
+            else if (b <= 32)
+                cutoff = 44;
+            else if (b <= 256)
+                cutoff = 48;
 
-        for (j = 0; j < n; j++)
+            if (n < cutoff)
+            {
+                fmpz_mat_hnf_minors(H, A);
+                _perm_clear(P);
+                _perm_clear(pivots);
+                return;
+            }
+        }
+
+        fmpz_mat_init(c, 1, r - 1);
+        fmpz_mat_init(d, 1, r - 1);
+        fmpz_mat_init(B, r - 2, r - 1);
+        fmpz_mat_init(C, r - 1, r - 1);
+
+        for (i = 0; i < r - 2; i++)
         {
-            for (i = 0; i < r - 2; i++)
+            for (j = 0; j < r - 1; j++)
+            {
                 fmpz_set(fmpz_mat_entry(B, i, j),
-                         fmpz_mat_entry(A, P[i], pivots[j]));
-            fmpz_mul(fmpz_mat_entry(B, r - 2, j), s,
-                     fmpz_mat_entry(A, P[r - 2], pivots[j]));
-            fmpz_addmul(fmpz_mat_entry(B, r - 2, j), t,
-                        fmpz_mat_entry(A, P[r - 1], pivots[j]));
+                        fmpz_mat_entry(A, P[i], pivots[j]));
+                fmpz_set(fmpz_mat_entry(C, i, j),
+                        fmpz_mat_entry(A, P[i], pivots[j]));
+            }
+            fmpz_set(fmpz_mat_entry(C, i, r - 1),
+                    fmpz_mat_entry(A, P[i], pivots[r - 1]));
+        }
+        for (j = 0; j < r - 1; j++)
+        {
+            fmpz_set(fmpz_mat_entry(c, 0, j),
+                    fmpz_mat_entry(A, P[r - 2], pivots[j]));
+            fmpz_set(fmpz_mat_entry(d, 0, j),
+                    fmpz_mat_entry(A, P[r - 1], pivots[j]));
         }
 
-        fmpz_mat_init(H2, r - 1, n);
-        fmpz_mat_init(H3, m + 1, n);
+        fmpz_init(g);
+        fmpz_init(s);
+        fmpz_init(t);
 
-        add_columns(H2, B, H1);
+        /* if rank is too low leave g = 0 so we don't try to decompose later */
+        if (r > 2)
+        {
+            fmpz_init(d1);
+            fmpz_init(d2);
 
-        for (i = 0; i < r - 1; i++)
+            double_det(d1, d2, B, c, d);
+            fmpz_xgcd(g, s, t, d1, d2);
+
+            for (j = 0; j < r - 1; j++)
+            {
+                fmpz_mul(fmpz_mat_entry(C, r - 2, j), s,
+                        fmpz_mat_entry(A, P[r - 2], pivots[j]));
+                fmpz_addmul(fmpz_mat_entry(C, r - 2, j), t,
+                        fmpz_mat_entry(A, P[r - 1], pivots[j]));
+            }
+
+            fmpz_clear(d2);
+            fmpz_clear(d1);
+        }
+
+        if (!fmpz_is_zero(g))       /* chosen matrix invertible */
+        {
+            fmpz_mat_init(H1, r - 1, r - 1);
+
+            if (COEFF_IS_MPZ(*g) && C->r > 3)   /* if g is too big, recurse */
+                fmpz_mat_hnf_pernet_stein(H1, C);
+            else                    /* use modulo determinant algorithm to compute HNF of C */
+                fmpz_mat_hnf_modular(H1, C, g);
+
+            fmpz_mat_clear(B);
+            fmpz_mat_init(B, r - 1, n);
+
             for (j = 0; j < n; j++)
-                fmpz_set(fmpz_mat_entry(H3, i, pivots[j]),
-                         fmpz_mat_entry(H2, i, j));
+            {
+                for (i = 0; i < r - 2; i++)
+                    fmpz_set(fmpz_mat_entry(B, i, j),
+                            fmpz_mat_entry(A, P[i], pivots[j]));
+                fmpz_mul(fmpz_mat_entry(B, r - 2, j), s,
+                        fmpz_mat_entry(A, P[r - 2], pivots[j]));
+                fmpz_addmul(fmpz_mat_entry(B, r - 2, j), t,
+                        fmpz_mat_entry(A, P[r - 1], pivots[j]));
+            }
 
-        for (i = 1; i <= m - r + 2; i++)
-            for (j = 0; j < n; j++)
-                fmpz_set(fmpz_mat_entry(H3, H3->r - i, j),
-                         fmpz_mat_entry(A, P[m - i], j));
+            fmpz_mat_init(H2, r - 1, n);
+            fmpz_mat_init(H3, m + 1, n);
 
-        add_rows(H3, r - 1);
+            add_columns(H2, B, H1);
 
-        /* fill H with HNF */
-        for (i = 0; i < m; i++)
-            for (j = 0; j < n; j++)
-                fmpz_set(fmpz_mat_entry(H, i, j), fmpz_mat_entry(H3, i, j));
+            for (i = 0; i < r - 1; i++)
+                for (j = 0; j < n; j++)
+                    fmpz_set(fmpz_mat_entry(H3, i, pivots[j]),
+                            fmpz_mat_entry(H2, i, j));
 
-        fmpz_mat_clear(H1);
-        fmpz_mat_clear(H2);
-        fmpz_mat_clear(H3);
-    }
-    else
-    {
-        if (r == n)             /* if A has full column rank we can use minors based hnf */
-            fmpz_mat_hnf_minors(H, A);
+            for (i = 1; i <= m - r + 2; i++)
+                for (j = 0; j < n; j++)
+                    fmpz_set(fmpz_mat_entry(H3, H3->r - i, j),
+                            fmpz_mat_entry(A, P[m - i], j));
+
+            /* check the pivots of H3 are as expected */
+            for (i = 0; i < r - 1; i++)
+            {
+                for (j = 0; j < H3->c && fmpz_is_zero(fmpz_mat_entry(H3, i, j)); j++);
+                if (pivots[i] != j)
+                    break;
+            }
+
+            /* the pivots were as expected so our choice of prime was ok */
+            if (i == r - 1)
+            {
+                /* add final rows in */
+                add_rows(H3, r - 1, pivots, r - 1);
+
+                /* fill H with HNF */
+                for (i = 0; i < m; i++)
+                    for (j = 0; j < n; j++)
+                        fmpz_set(fmpz_mat_entry(H, i, j), fmpz_mat_entry(H3, i, j));
+
+                finished = 1;
+            }
+            /* otherwise we must restart as our random prime gave us incorrect pivots */
+
+            fmpz_mat_clear(H1);
+            fmpz_mat_clear(H2);
+            fmpz_mat_clear(H3);
+        }
         else
-            fmpz_mat_hnf_classical(H, A);
+        {
+            if (r == n)             /* if A has full column rank we can use minors based hnf */
+                fmpz_mat_hnf_minors(H, A);
+            else
+                fmpz_mat_hnf_classical(H, A);
+            finished = 1;
+        }
+
+        fmpz_clear(t);
+        fmpz_clear(s);
+        fmpz_clear(g);
+        fmpz_mat_clear(C);
+        fmpz_mat_clear(B);
+        fmpz_mat_clear(c);
+        fmpz_mat_clear(d);
     }
 
+    flint_randclear(state);
     _perm_clear(P);
     _perm_clear(pivots);
-    fmpz_clear(t);
-    fmpz_clear(s);
-    fmpz_clear(g);
-    fmpz_mat_clear(C);
-    fmpz_mat_clear(B);
-    fmpz_mat_clear(c);
-    fmpz_mat_clear(d);
-
-    return 1;
 }
