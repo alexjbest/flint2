@@ -64,7 +64,7 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
     if (fmpz_mat_nullspace(k, B1) != 1)
     {
         flint_printf("Exception (fmpz_mat_hnf_pernet_stein). "
-                     "Nullspace was not dimension one.\n");
+                "Nullspace was not dimension one.\n");
         abort();
     }
 
@@ -85,7 +85,7 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
         fmpz_zero(tmp);
         for (j = 0; j < n; j++)
             fmpz_addmul(tmp, fmpz_mat_entry(Bu, n - 1, j),
-                        fmpz_mat_entry(k, j, 0));
+                    fmpz_mat_entry(k, j, 0));
     }
     flint_randclear(state);
     fmpz_clear(tmp);
@@ -118,16 +118,16 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
         for (i = 0; i < n; i++)
         {
             _fmpq_addmul(fmpq_numref(num), fmpq_denref(num),
-                         fmpz_mat_entry(B, n - 1, i), one,
-                         fmpq_mat_entry_num(x, i, j),
-                         fmpq_mat_entry_den(x, i, j));
+                    fmpz_mat_entry(B, n - 1, i), one,
+                    fmpq_mat_entry_num(x, i, j),
+                    fmpq_mat_entry_den(x, i, j));
         }
         _fmpq_sub(fmpq_numref(alpha), fmpq_denref(alpha),
-                  fmpz_mat_entry(B, n - 1, n + j), one,
-                  fmpq_numref(num), fmpq_denref(num));
+                fmpz_mat_entry(B, n - 1, n + j), one,
+                fmpq_numref(num), fmpq_denref(num));
 
         _fmpq_mul(fmpq_numref(alpha), fmpq_denref(alpha),
-                  fmpq_numref(alpha), fmpq_denref(alpha), one, den);
+                fmpq_numref(alpha), fmpq_denref(alpha), one, den);
         if (neg)
             fmpq_neg(alpha, alpha);
 
@@ -135,8 +135,8 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
         for (i = 0; i < n; i++)
         {
             _fmpq_addmul(fmpq_mat_entry_num(x, i, j),
-                         fmpq_mat_entry_den(x, i, j), fmpq_numref(alpha),
-                         fmpq_denref(alpha), fmpz_mat_entry(k, i, 0), one);
+                    fmpq_mat_entry_den(x, i, j), fmpq_numref(alpha),
+                    fmpq_denref(alpha), fmpz_mat_entry(k, i, 0), one);
         }
     }
 
@@ -182,12 +182,9 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
 
     for (row = start_row; row < H->r; row++)
     {
-        /*flint_printf("%wd\n", row);
-        fmpz_mat_print_pretty(H);*/
         /* reduce row to be added with existing */
         for (i = j = 0; i < num_pivots; i++)
         {
-            /*flint_printf("\nreducing with row %wd\n", i);*/
             /* check if added row can still be reduced */
             for (; j < pivots[i]; j++)
                 if (!fmpz_is_zero(fmpz_mat_entry(H, row, j)))
@@ -197,7 +194,7 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
             if (fmpz_is_zero(fmpz_mat_entry(H, row, j)))
                 continue;
             fmpz_xgcd(d, u, v, fmpz_mat_entry(H, i, j),
-                      fmpz_mat_entry(H, row, j));
+                    fmpz_mat_entry(H, row, j));
             fmpz_divexact(r1d, fmpz_mat_entry(H, i, j), d);
             fmpz_divexact(r2d, fmpz_mat_entry(H, row, j), d);
             for (j2 = j; j2 < H->c; j2++)
@@ -205,12 +202,11 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
                 fmpz_mul(b, u, fmpz_mat_entry(H, i, j2));
                 fmpz_addmul(b, v, fmpz_mat_entry(H, row, j2));
                 fmpz_mul(fmpz_mat_entry(H, row, j2), r1d,
-                         fmpz_mat_entry(H, row, j2));
+                        fmpz_mat_entry(H, row, j2));
                 fmpz_submul(fmpz_mat_entry(H, row, j2), r2d,
-                            fmpz_mat_entry(H, i, j2));
+                        fmpz_mat_entry(H, i, j2));
                 fmpz_set(fmpz_mat_entry(H, i, j2), b);
             }
-            /*fmpz_mat_print_pretty(H);*/
         }
 
         /* find first non-zero entry of the added row */
@@ -223,7 +219,7 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
                 for (j2 = j; j2 < H->c; j2++)
                 {
                     fmpz_neg(fmpz_mat_entry(H, row, j2),
-                             fmpz_mat_entry(H, row, j2));
+                            fmpz_mat_entry(H, row, j2));
                 }
             }
             do
@@ -234,12 +230,12 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
                     break;
                 new_row--;
                 for (j2 = 0; j2 < H->c &&
-                     fmpz_is_zero(fmpz_mat_entry(H, new_row, j2)); j2++) ;
+                        fmpz_is_zero(fmpz_mat_entry(H, new_row, j2)); j2++) ;
             }
             while (j2 > j);
         }
 
-	/* recompute pivots */
+        /* recompute pivots */
         for (i = new_row, j = 0; i <= row && i < H->c; i++, j++)
         {
             for (; j < H->c && fmpz_is_zero(fmpz_mat_entry(H, i, j)); j++) ;
@@ -255,11 +251,11 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
             for (i2 = 0; i2 < i; i2++)
             {
                 fmpz_fdiv_q(q, fmpz_mat_entry(H, i2, pivots[i]),
-                            fmpz_mat_entry(H, i, pivots[i]));
+                        fmpz_mat_entry(H, i, pivots[i]));
                 for (j2 = pivots[i]; j2 < H->c; j2++)
                 {
                     fmpz_submul(fmpz_mat_entry(H, i2, j2), q,
-                                fmpz_mat_entry(H, i, j2));
+                            fmpz_mat_entry(H, i, j2));
                 }
             }
         }
@@ -276,7 +272,7 @@ add_rows(fmpz_mat_t H, slong start_row, slong *pivots, slong num_pivots)
 
 static void
 double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
-           const fmpz_mat_t d)
+        const fmpz_mat_t d)
 {
     slong i, j, n;
     slong *P;
@@ -324,7 +320,7 @@ double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
         {
             fmpz_lcm(u1, u1, fmpq_mat_entry_den(x, i, 0));
             fmpq_div(tmpq, fmpq_mat_entry(x, i, 0),
-                     fmpq_mat_entry(x, n - 1, 0));
+                    fmpq_mat_entry(x, n - 1, 0));
             fmpz_lcm(u2, u2, fmpq_denref(tmpq));
         }
         fmpz_lcm(u1, u1, fmpq_mat_entry_den(x, n - 1, 0));
@@ -339,7 +335,7 @@ double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
             fmpz_zero(s1);
             for (i = 0; i < n; i++)
                 fmpz_addmul(s1, fmpz_mat_entry(Bt, i, j),
-                            fmpz_mat_entry(Bt, i, j));
+                        fmpz_mat_entry(Bt, i, j));
             fmpz_sqrtrem(s1, t, s1);
             if (!fmpz_is_zero(t))
                 fmpz_add_ui(s1, s1, UWORD(1));
@@ -393,7 +389,7 @@ double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
             v1mod = UWORD(1);
             for (i = 0; i < n; i++)
                 v1mod = n_mulmod2_preinv(v1mod, nmod_mat_entry(Btmod, i, i), p,
-                                         Btmod->mod.ninv);
+                        Btmod->mod.ninv);
             if (_perm_parity(P, n) == 1)
                 v1mod = nmod_neg(v1mod, Btmod->mod);
 
@@ -409,14 +405,14 @@ double_det(fmpz_t d1, fmpz_t d2, const fmpz_mat_t B, const fmpz_mat_t c,
             v2mod = UWORD(1);
             for (i = 0; i < n; i++)
                 v2mod = n_mulmod2_preinv(v2mod, nmod_mat_entry(Btmod, i, i), p,
-                                         Btmod->mod.ninv);
+                        Btmod->mod.ninv);
             if (_perm_parity(P, n) == 1)
                 v2mod = nmod_neg(v2mod, Btmod->mod);
 
             v1mod = n_mulmod2_preinv(v1mod, n_invmod(u1mod, p), p,
-                                     Btmod->mod.ninv);
+                    Btmod->mod.ninv);
             v2mod = n_mulmod2_preinv(v2mod, n_invmod(u2mod, p), p,
-                                     Btmod->mod.ninv);
+                    Btmod->mod.ninv);
             fmpz_CRT_ui(v1, v1, prod, v1mod, p, 1);
             fmpz_CRT_ui(v2, v2, prod, v2mod, p, 1);
             fmpz_mul_ui(prod, prod, p);
