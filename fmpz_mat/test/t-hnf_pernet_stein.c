@@ -30,12 +30,6 @@
 #include "fmpz.h"
 #include "fmpz_mat.h"
 
-/* 
-   Though fmpz_mat_hnf_pernet_stein may fail to give the correct result, so
-   that this test code could in theory fail with low probability, we always
-   generate the same random values, so it should always pass.
-*/
-
 int
 main(void)
 {

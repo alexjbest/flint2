@@ -74,6 +74,7 @@ clean:
 	rm -f $(OBJS) $(LOBJS) $(TESTS) $(PROFS) $(EXMPS)
 	rm -f libflint.a
 	rm -f $(wildcard $(FLINT_LIBNAME)*)
+	rm -f $(wildcard $(FLINT_LIB)*)
 	rm -rf build
 
 distclean: clean
@@ -175,7 +176,7 @@ endef
 check: library test_helpers.o
 ifndef MOD
 	$(AT)$(MAKE) $(TESTS)
-	$(AT)(BUILD_DIR=build; export BUILD_DIR; $(MAKE) -f Makefile.subdirs -C . check || exit$$?;)
+	$(AT)(BUILD_DIR=build; export BUILD_DIR; $(MAKE) -f Makefile.subdirs -C . check || exit $$?;)
 	$(AT)$(foreach ext, $(EXTENSIONS), $(foreach dir, $(patsubst $(ext)/%.h, %, $(wildcard $(ext)/*.h)), mkdir -p build/$(dir)/test; BUILD_DIR=$(CURDIR)/build/$(dir); export BUILD_DIR; MOD_DIR=$(dir); export MOD_DIR; $(MAKE) -f $(CURDIR)/Makefile.subdirs -C $(ext)/$(dir) check || exit $$?;))
 	$(AT)$(foreach dir, $(BUILD_DIRS), mkdir -p build/$(dir)/test; BUILD_DIR=../build/$(dir); export BUILD_DIR; $(MAKE) -f ../Makefile.subdirs -C $(dir) check || exit $$?;)
 	mkdir -p build/interfaces/test
@@ -226,8 +227,8 @@ build/%.lo: %.c $(HEADERS) | build
 build/%.o: %.c $(HEADERS) | build
 	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) -c $< -o $@;
 
-build/test/%$(EXEEXT): test/%.c $(HEADERS) | build/test
-	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) $< -o $@ $(LIBS)
+build/test/%$(EXEEXT): test/%.c $(HEADERS) test_helpers.o | build/test
+	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) test_helpers.o $< -o $@ $(LIBS)
 
 build/test:
 	mkdir -p build/test
@@ -246,6 +247,9 @@ build/interfaces/test/t-NTL-interface$(EXEEXT): interfaces/test/t-NTL-interface.
 
 print-%:
 	@echo '$*=$($*)'
+
+test_helpers.o: test_helpers.c
+	$(QUIET_CC) $(CC) $(CFLAGS) $(INCS) -c test_helpers.c -o test_helpers.o
 
 .PHONY: profile library shared static clean examples tune check tests distclean dist install all valgrind
 

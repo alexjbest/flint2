@@ -19,7 +19,7 @@
 =============================================================================*/
 /******************************************************************************
 
-    Copyright (C) 2014 Alex J. Best
+    Copyright (C) 2014, 2015 Alex J. Best
 
 ******************************************************************************/
 
@@ -28,7 +28,7 @@
 #include "perm.h"
 
 static void
-add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
+add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1, flint_rand_t state)
 {
     int neg;
     slong i, j, n, bits;
@@ -36,7 +36,6 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
     fmpq_t num, alpha;
     fmpz_mat_t Bu, B1, cols, k;
     fmpq_mat_t H1_q, cols_q, x;
-    flint_rand_t state;
 
     n = B->r;
 
@@ -77,7 +76,6 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
     fmpz_init(tmp);
 
     /* set the last row of Bu to be random, such that Bu is nonsingular */
-    flint_randinit(state);
     while (fmpz_is_zero(tmp))
     {
         _fmpz_vec_randtest(Bu->rows[n - 1], state, n, bits);
@@ -87,7 +85,6 @@ add_columns(fmpz_mat_t H, const fmpz_mat_t B, const fmpz_mat_t H1)
             fmpz_addmul(tmp, fmpz_mat_entry(Bu, n - 1, j),
                     fmpz_mat_entry(k, j, 0));
     }
-    flint_randclear(state);
     fmpz_clear(tmp);
 
     /* solve Bu*x = cols */
@@ -591,7 +588,7 @@ fmpz_mat_hnf_pernet_stein(fmpz_mat_t H, const fmpz_mat_t A)
             fmpz_mat_init(H2, r - 1, n);
             fmpz_mat_init(H3, m + 1, n);
 
-            add_columns(H2, B, H1);
+            add_columns(H2, B, H1, state);
 
             for (i = 0; i < r - 1; i++)
                 for (j = 0; j < n; j++)
@@ -652,3 +649,4 @@ fmpz_mat_hnf_pernet_stein(fmpz_mat_t H, const fmpz_mat_t A)
     _perm_clear(P);
     _perm_clear(pivots);
 }
+
