@@ -1,29 +1,15 @@
-/*============================================================================
-
-    This file is part of FLINT.
-
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
+/*
     Copyright (C) 2010 Sebastian Pancratz
     Copyright (C) 2010 William Hart
     Copyright (C) 2011 Fredrik Johansson
- 
-******************************************************************************/
+
+    This file is part of FLINT.
+
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef FMPQ_POLY_H
 #define FMPQ_POLY_H
@@ -267,17 +253,17 @@ FLINT_DLL void fmpq_poly_sub_si(fmpq_poly_t res, const fmpq_poly_t poly, slong c
 
 FLINT_DLL void fmpq_poly_si_sub(fmpq_poly_t res, slong c, const fmpq_poly_t poly);
 
-FLINT_DLL void fmpq_poly_add_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c);
+FLINT_DLL void fmpq_poly_add_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, const fmpz_t c);
 
-FLINT_DLL void fmpq_poly_sub_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c);
+FLINT_DLL void fmpq_poly_sub_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, const fmpz_t c);
 
-FLINT_DLL void fmpq_poly_fmpz_sub(fmpq_poly_t res, fmpz_t c, const fmpq_poly_t poly);
+FLINT_DLL void fmpq_poly_fmpz_sub(fmpq_poly_t res, const fmpz_t c, const fmpq_poly_t poly);
 
-FLINT_DLL void fmpq_poly_add_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c);
+FLINT_DLL void fmpq_poly_add_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c);
 
-FLINT_DLL void fmpq_poly_sub_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c);
+FLINT_DLL void fmpq_poly_sub_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c);
 
-FLINT_DLL void fmpq_poly_fmpq_sub(fmpq_poly_t res, fmpq_t c, const fmpq_poly_t poly);
+FLINT_DLL void fmpq_poly_fmpq_sub(fmpq_poly_t res, const fmpq_t c, const fmpq_poly_t poly);
 
 /*  Addition and subtraction  ************************************************/
 
@@ -649,6 +635,14 @@ FLINT_DLL void _fmpq_poly_tanh_series(fmpz * g, fmpz_t gden,
 
 FLINT_DLL void fmpq_poly_tanh_series(fmpq_poly_t res, const fmpq_poly_t poly, slong n);
 
+/* Orthogonal polynomials  ***************************************************/
+
+FLINT_DLL void fmpq_poly_legendre_p(fmpq_poly_t poly, ulong n);
+
+FLINT_DLL void fmpq_poly_laguerre_l(fmpq_poly_t poly, ulong n);
+
+FLINT_DLL void fmpq_poly_gegenbauer_c(fmpq_poly_t poly, ulong n, const fmpq_t a);
+
 /*  Evaluation  **************************************************************/
 
 FLINT_DLL void _fmpq_poly_evaluate_fmpz(fmpz_t rnum, fmpz_t rden, const fmpz * poly, 
@@ -771,13 +765,13 @@ FLINT_DLL int fmpq_poly_debug(const fmpq_poly_t poly);
 FLINT_DLL int _fmpq_poly_fprint(FILE * file, 
                       const fmpz * poly, const fmpz_t den, slong len);
 
-int fmpq_poly_fprint(FILE * file, const fmpq_poly_t poly);
+FLINT_DLL int fmpq_poly_fprint(FILE * file, const fmpq_poly_t poly);
 
 FLINT_DLL int _fmpq_poly_fprint_pretty(FILE * file, 
                              const fmpz *poly, const fmpz_t den, slong len, 
                              const char * x);
 
-int fmpq_poly_fprint_pretty(FILE * file, 
+FLINT_DLL int fmpq_poly_fprint_pretty(FILE * file,
                             const fmpq_poly_t poly, const char * var);
 
 FMPQ_POLY_INLINE

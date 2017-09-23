@@ -4,6 +4,17 @@ addons:
   apt:
     packages:
       - texinfo
+
+os:
+  - osx
+  - linux
+
+osx_image: xcode6.4
+
+compiler:
+  - gcc
+  - clang
+
 script:
-  - ./.build_dependencies && ./configure --with-mpir=mpir-2.7.0 --with-mpfr=mpfr-3.1.4 && make && make check
+  - ./.build_dependencies && ./configure --with-mpir=mpir-2.7.2 --with-mpfr=mpfr-3.1.6 && make -j4 && make -j4 check
 

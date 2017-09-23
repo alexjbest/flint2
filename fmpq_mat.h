@@ -1,27 +1,13 @@
-/*=============================================================================
+/*
+    Copyright (C) 2011 Fredrik Johansson
 
     This file is part of FLINT.
 
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
-    Copyright (C) 2011 Fredrik Johansson
-
-******************************************************************************/
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef FMPQ_MAT_H
 #define FMPQ_MAT_H
@@ -85,6 +71,8 @@ slong fmpq_mat_ncols(const fmpq_mat_t mat)
 
 FLINT_DLL void fmpq_mat_init(fmpq_mat_t mat, slong rows, slong cols);
 
+FLINT_DLL void fmpq_mat_init_set(fmpq_mat_t mat1, const fmpq_mat_t mat2);
+
 FLINT_DLL void fmpq_mat_clear(fmpq_mat_t mat);
 
 FLINT_DLL void fmpq_mat_swap(fmpq_mat_t mat1, fmpq_mat_t mat2);
@@ -145,6 +133,8 @@ FLINT_DLL int fmpq_mat_equal(const fmpq_mat_t mat1, const fmpq_mat_t mat2);
 FLINT_DLL int fmpq_mat_is_integral(const fmpq_mat_t mat);
 
 FLINT_DLL int fmpq_mat_is_zero(const fmpq_mat_t mat);
+
+FLINT_DLL int fmpq_mat_is_one(const fmpq_mat_t mat);
 
 FMPQ_MAT_INLINE
 int fmpq_mat_is_empty(const fmpq_mat_t mat)
@@ -218,7 +208,7 @@ FLINT_DLL int fmpq_mat_solve_fraction_free(fmpq_mat_t X, const fmpq_mat_t A,
 
 FLINT_DLL int fmpq_mat_solve_dixon(fmpq_mat_t X, const fmpq_mat_t A, const fmpq_mat_t B);
 
-int fmpq_mat_solve_fmpz_mat(fmpq_mat_t X, const fmpz_mat_t A,
+FLINT_DLL int fmpq_mat_solve_fmpz_mat(fmpq_mat_t X, const fmpz_mat_t A,
     const fmpz_mat_t B);
 
 /* Inverse *******************************************************************/
@@ -241,7 +231,7 @@ FLINT_DLL void fmpq_mat_gso(fmpq_mat_t B, const fmpq_mat_t A);
 
 /* Characteristic polynomial *************************************************/
 
-void fmpq_mat_similarity(fmpq_mat_t A, slong r, fmpq_t d);
+FLINT_DLL void fmpq_mat_similarity(fmpq_mat_t A, slong r, fmpq_t d);
 
 /* Characteristic polynomial *************************************************/
 
@@ -252,9 +242,9 @@ FLINT_DLL void fmpq_mat_charpoly(fmpq_poly_t pol, const fmpq_mat_t mat);
 
 /* Minimal polynomial ********************************************************/
 
-slong _fmpq_mat_minpoly(fmpz * coeffs, fmpz_t den, const fmpq_mat_t mat);
+FLINT_DLL slong _fmpq_mat_minpoly(fmpz * coeffs, fmpz_t den, const fmpq_mat_t mat);
 
-void fmpq_mat_minpoly(fmpq_poly_t pol, const fmpq_mat_t mat);
+FLINT_DLL void fmpq_mat_minpoly(fmpq_poly_t pol, const fmpq_mat_t mat);
 
 #ifdef __cplusplus
 }

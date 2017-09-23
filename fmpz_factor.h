@@ -1,27 +1,13 @@
-/*=============================================================================
+/*
+    Copyright (C) 2011 Fredrik Johansson
 
     This file is part of FLINT.
 
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
-    Copyright (C) 2011 Fredrik Johansson
-
-******************************************************************************/
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef FMPZ_FACTOR_H
 #define FMPZ_FACTOR_H
@@ -50,7 +36,6 @@ typedef struct
 
 typedef fmpz_factor_struct fmpz_factor_t[1];
 
-
 /* Utility functions *********************************************************/
 
 FLINT_DLL void fmpz_factor_init(fmpz_factor_t factor);
@@ -61,11 +46,16 @@ FLINT_DLL void fmpz_factor_print(const fmpz_factor_t factor);
 
 FLINT_DLL void _fmpz_factor_fit_length(fmpz_factor_t factor, slong len);
 
-FLINT_DLL void _fmpz_factor_append_ui(fmpz_factor_t factor, mp_limb_t p, ulong exp);
+FLINT_DLL void _fmpz_factor_append_ui(fmpz_factor_t factor,
+                                                       mp_limb_t p, ulong exp);
 
-FLINT_DLL void _fmpz_factor_append(fmpz_factor_t factor, fmpz_t p, ulong exp);
+FLINT_DLL void _fmpz_factor_append(fmpz_factor_t factor,
+                                                    const fmpz_t p, ulong exp);
 
 FLINT_DLL void _fmpz_factor_set_length(fmpz_factor_t factor, slong newlen);
+
+FLINT_DLL void _fmpz_factor_concat(fmpz_factor_t factor1,
+                                             fmpz_factor_t factor2, ulong exp);
 
 /* Factoring *****************************************************************/
 
@@ -75,6 +65,8 @@ FLINT_DLL int fmpz_factor_trial_range(fmpz_factor_t factor, const fmpz_t n,
                                        ulong start, ulong num_primes);
 
 FLINT_DLL void fmpz_factor(fmpz_factor_t factor, const fmpz_t n);
+
+FLINT_DLL void fmpz_factor_no_trial(fmpz_factor_t factor, const fmpz_t n);
 
 FLINT_DLL void fmpz_factor_si(fmpz_factor_t factor, slong n);
 
@@ -117,11 +109,11 @@ FLINT_DLL void fmpz_factor_divisor_sigma(fmpz_t res, const fmpz_factor_t fac, ul
 
 typedef struct ecm_s {
 
-  mp_ptr t, u, v, w;  /* temp variables */
-  mp_ptr x, z;    /* the coordinates */
-  mp_ptr a24;     /* value (a + 2)/4 */
-  mp_ptr ninv;    /* invere of n */
-  mp_ptr one;     /* one shifted */
+    mp_ptr t, u, v, w;  /* temp variables */
+    mp_ptr x, z;    /* the coordinates */
+    mp_ptr a24;     /* value (a + 2)/4 */
+    mp_ptr ninv;    /* invere of n */
+    mp_ptr one;     /* one shifted */
 
     unsigned char *GCD_table; /* checks whether baby step int is
                            coprime to Primorial or not */

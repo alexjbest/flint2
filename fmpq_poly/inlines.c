@@ -1,27 +1,13 @@
-/*=============================================================================
+/*
+    Copyright (C) 2009 William Hart
 
     This file is part of FLINT.
 
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
-    Copyright (C) 2009 William Hart
-
-******************************************************************************/
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #define FMPQ_POLY_INLINES_C
 
@@ -96,7 +82,7 @@ void fmpq_poly_si_sub(fmpq_poly_t res, slong c, const fmpq_poly_t poly)
    }
 }
 
-void fmpq_poly_add_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c)
+void fmpq_poly_add_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, const fmpz_t c)
 {
    if (poly->length == 0)
       fmpq_poly_set_fmpz(res, c);
@@ -116,7 +102,7 @@ void fmpq_poly_add_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c)
    }
 }
 
-void fmpq_poly_sub_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c)
+void fmpq_poly_sub_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, const fmpz_t c)
 {
    if (poly->length == 0)
    {
@@ -138,7 +124,7 @@ void fmpq_poly_sub_fmpz(fmpq_poly_t res, const fmpq_poly_t poly, fmpz_t c)
    }
 }
 
-void fmpq_poly_fmpz_sub(fmpq_poly_t res, fmpz_t c, const fmpq_poly_t poly)
+void fmpq_poly_fmpz_sub(fmpq_poly_t res, const fmpz_t c, const fmpq_poly_t poly)
 {
    if (poly->length == 0)
       fmpq_poly_set_fmpz(res, c);
@@ -158,7 +144,7 @@ void fmpq_poly_fmpz_sub(fmpq_poly_t res, fmpz_t c, const fmpq_poly_t poly)
    }
 }
 
-void fmpq_poly_add_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c)
+void fmpq_poly_add_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c)
 {
    if (poly->length == 0)
       fmpq_poly_set_fmpq(res, c);
@@ -178,7 +164,7 @@ void fmpq_poly_add_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c)
    }
 }
 
-void fmpq_poly_sub_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c)
+void fmpq_poly_sub_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, const fmpq_t c)
 {
    if (poly->length == 0)
    {
@@ -200,7 +186,7 @@ void fmpq_poly_sub_fmpq(fmpq_poly_t res, const fmpq_poly_t poly, fmpq_t c)
    }
 }
 
-void fmpq_poly_fmpq_sub(fmpq_poly_t res, fmpq_t c, const fmpq_poly_t poly)
+void fmpq_poly_fmpq_sub(fmpq_poly_t res, const fmpq_t c, const fmpq_poly_t poly)
 {
    if (poly->length == 0)
       fmpq_poly_set_fmpq(res, c);

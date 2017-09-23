@@ -1,28 +1,14 @@
-/*=============================================================================
-
-    This file is part of FLINT.
-
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
+/*
     Copyright (C) 2011 Andy Novocin
     Copyright (C) 2011 Sebastian Pancratz
 
-******************************************************************************/
+    This file is part of FLINT.
+
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 *******************************************************************************
 
@@ -123,7 +109,7 @@ void fmpz_poly_factor_zassenhaus_recombination(fmpz_poly_factor_t
     \code{F^exp} to the factor structure \code{final_fac}.
 
 void _fmpz_poly_factor_zassenhaus(fmpz_poly_factor_t final_fac, 
-                                  slong exp, fmpz_poly_t f, slong cutoff)
+                     slong exp, fmpz_poly_t f, slong cutoff, int use_van_hoeij)
 
     This is the internal wrapper of Zassenhaus.
 
@@ -141,6 +127,10 @@ void _fmpz_poly_factor_zassenhaus(fmpz_poly_factor_t final_fac,
     this can be easily achieved by taking out factors of the form $x^k$ 
     before calling this routine.
 
+    If the final flag is set, the function will use the van Hoeij factorisation
+    algorithm with gradual feeding and mod $2^k$ data truncation to find
+    factors when the number of local factors is large.
+
 void fmpz_poly_factor_zassenhaus(fmpz_poly_factor_t final_fac, fmpz_poly_t F)
 
     A wrapper of the Zassenhaus factoring algorithm, which takes as input 
@@ -149,3 +139,8 @@ void fmpz_poly_factor_zassenhaus(fmpz_poly_factor_t final_fac, fmpz_poly_t F)
     The complexity will be exponential in the number of local factors 
     we find for the components of a squarefree factorization of $F$.
 
+void fmpz_poly_factor(fmpz_poly_factor_t final_fac, fmpz_poly_t F)
+
+    A wrapper of the Zassenhaus and van Hoeij factoring algorithms, which takes
+    as input any polynomial $F$, and stores a factorization in
+    \code{final_fac}.

@@ -1,28 +1,13 @@
-/*=============================================================================
+/*
+    Copyright (C) 2015 Kushagra Singh
 
     This file is part of FLINT.
 
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
-    Copyright (C) 2015 Kushagra Singh
-
-******************************************************************************/
-
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #include <gmp.h>
 #include "flint.h"
@@ -56,7 +41,7 @@ int
 n_factor_ecm(mp_limb_t *f, mp_limb_t curves, mp_limb_t B1, mp_limb_t B2,
              flint_rand_t state, mp_limb_t n)
 {
-    mp_limb_t P, num, maxD, mmin, mmax, mdiff, prod, maxj, sig, nm8;
+    mp_limb_t P, num, maxD, mmin, mmax, mdiff, prod, maxj, sig;
     int i, j, ret;
     n_ecm_t n_ecm_inf;
 
@@ -66,7 +51,6 @@ n_factor_ecm(mp_limb_t *f, mp_limb_t curves, mp_limb_t B1, mp_limb_t B2,
     n <<= n_ecm_inf->normbits;
     n_ecm_inf->ninv = n_preinvert_limb(n);
     n_ecm_inf->one = UWORD(1) << n_ecm_inf->normbits;
-    nm8 = n_submod(n, UWORD(8) << n_ecm_inf->normbits, n);
 
     ret = 0;
 

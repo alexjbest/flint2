@@ -1,27 +1,13 @@
-/*=============================================================================
+/*
+    Copyright (C) 2009 William Hart
 
     This file is part of FLINT.
 
-    FLINT is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    FLINT is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with FLINT; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-
-=============================================================================*/
-/******************************************************************************
-
-    Copyright (C) 2009 William Hart
-
-******************************************************************************/
+    FLINT is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.  See <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef FLINT_H
 #define FLINT_H
@@ -36,7 +22,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h> /* for alloca on FreeBSD */
-#if !defined(BSD) && !defined(__MINGW64__) && !defined(__MINGW32__) && !defined(_MSC_VER)
+#if (!defined(BSD) && !defined(__MINGW64__) && !defined(__MINGW32__) && !defined(_MSC_VER)) || defined(__GNU__)
 /* MinGW and FreeBSD have alloca, but not alloca.h */
 #include <alloca.h>
 #endif
@@ -64,8 +50,8 @@
 
 #define __FLINT_VERSION 2
 #define __FLINT_VERSION_MINOR 5 
-#define __FLINT_VERSION_PATCHLEVEL 2 
-#define FLINT_VERSION "2.5.2"
+#define __FLINT_VERSION_PATCHLEVEL 3 
+#define FLINT_VERSION "2.5.3"
 #define __FLINT_RELEASE (__FLINT_VERSION * 10000 + \
                          __FLINT_VERSION_MINOR * 100 + \
                          __FLINT_VERSION_PATCHLEVEL)
@@ -95,9 +81,9 @@ extern char version[];
 #define ulong mp_limb_t
 #define slong mp_limb_signed_t
 
-void * flint_malloc(size_t size);
-void * flint_realloc(void * ptr, size_t size);
-void * flint_calloc(size_t num, size_t size);
+FLINT_DLL void * flint_malloc(size_t size);
+FLINT_DLL void * flint_realloc(void * ptr, size_t size);
+FLINT_DLL void * flint_calloc(size_t num, size_t size);
 FLINT_DLL void flint_free(void * ptr);
 
 typedef void (*flint_cleanup_function_t)(void);
@@ -107,6 +93,15 @@ FLINT_DLL void flint_cleanup(void);
 FLINT_DLL void __flint_set_memory_functions(void *(*alloc_func) (size_t),
      void *(*calloc_func) (size_t, size_t), void *(*realloc_func) (void *, size_t),
                                                               void (*free_func) (void *));
+
+FLINT_DLL void flint_abort(void);
+FLINT_DLL void flint_set_abort(void (*func)(void));
+  /* flint_abort is calling abort by default
+   * if flint_set_abort is used, then instead of abort this function
+   * is called. EXPERIMENTALLY use at your own risk!
+   * May disappear in future versions.
+   */
+
 
 #if defined(_WIN64) || defined(__mips64)
 #if defined(__MINGW64__)
@@ -154,8 +149,17 @@ FLINT_DLL void __flint_set_memory_functions(void *(*alloc_func) (size_t),
 #define FLINT_TLS_PREFIX
 #endif
 
+#ifdef _OPENMP
+#define FLINT_PREFER_OMP 1
+#elif HAVE_PTHREAD
+#define FLINT_PREFER_OMP 0
+#else
+#define FLINT_PREFER_OMP 1
+#endif
+
 FLINT_DLL int flint_get_num_threads(void);
 FLINT_DLL void flint_set_num_threads(int num_threads);
+FLINT_DLL void flint_parallel_cleanup(void);
 
 FLINT_DLL int flint_test_multiplier(void);
 
